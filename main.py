@@ -1,25 +1,21 @@
 from cmu_112_graphics import *
-from Layer import *
+from Canvas import * # Layer functions, LayerObj Class
 from UI import *
 
 def appStarted(app):
-    # size of every layer
-    app.canvasWidth = 700
-    app.canvasHeight = 300
-    # start off with 3 layers
-    app.layers = [LayerObj(app, pos) for pos in range(3)]
-    app.currentLayer = 1 # 0 is background, 1 goes up
+    # app.timerDelay = 1
+    app.mouseMovedDelay = 1
+    UI.initializeUIVariables(app)
+    AppCanvas.initializeLayers(app)
+    # current tool
+    app.currentTool = "brush" # can be eraser
+    app.draw = None
+    app.currentColor = (0,0,255,255)
 
-    # debugging
-    draw = ImageDraw.Draw(app.layers[1].image)
-    draw.line((0, 0, app.canvasWidth, app.canvasHeight), width=10, fill=(255, 0, 0, 255))
-    draw.line((0, app.canvasHeight, app.canvasWidth, 0), width=10, fill=(0, 0, 255, 25))
-
-def redrawAll(app, canvas):
-    UI.drawLayerControl(app, canvas)
-    Layer.drawLayers(app, canvas)
-
+import random
 def keyPressed(app, event):
+    if event.key == "r":
+        appStarted(app)
     # Change layer
     if event.key == "0":
         app.currentLayer = 0
@@ -27,16 +23,47 @@ def keyPressed(app, event):
         app.currentLayer = 1
     if event.key == "2":
         app.currentLayer = 2
-    # Change transparency
-    if event.key == "Down":
-        layer = app.layers[app.currentLayer].image
-        alpha = layer.split()[-1]
-        print(alpha)
-        layer.putalpha(alpha)
-    if event.key == "Up":
-        layer = app.layers[app.currentLayer].image
-        alpha = layer.split()[-1]
-        layer.putalpha(alpha + 50)
+    if event.key == "c":
+        app.currentColor = random.choice(["green", "black", "purple"])
+    if event.key == "e":
+        app.currentTool = "eraser"
+    if event.key == "b":
+        app.currentTool = "brush"
+
+def mousePressed(app, event):
+    print(UI.menuClicked(app, event.x, event.y))
+    # only set app.draw to something if u click on canvasContainer
+    if UI.menuClicked(app, event.x, event.y) == app.canvasContainer:
+        toModify = app.layers[app.currentLayer].image
+        app.draw = ImageDraw.Draw(toModify)
+    else:
+        print("heehee not implemented yet")
+
+def mouseDragged(app, event):
+    # HUGE PROBLEM: CIRCLES ARE NOT BEING DRAWN FREQUENTLY ENOUGH
+    print(event.x, event.y)
+    if app.currentTool == "brush":
+        app.draw.ellipse((event.x - app.canvasX - 5,
+                            event.y - app.canvasY - 5,
+                            event.x - app.canvasX + 5,
+                            event.y - app.canvasY + 5), fill=app.currentColor)
+    if app.currentTool == "eraser":
+        app.draw.ellipse((event.x - app.canvasX - 5,
+                    event.y - app.canvasY - 5,
+                    event.x - app.canvasX + 5,
+                    event.y - app.canvasY + 5), fill=(255,255,255,0))
+
+def mouseReleased(app, event):
+    del app.draw
+    app.draw = None
+
+def redrawAll(app, canvas):
+    UI.drawCanvasContainer(app, canvas)
+    AppCanvas.drawLayers(app, canvas)
+    UI.drawTopAndSideBar(app, canvas)
+    canvas.create_text(app.width, 0, text=f"Current Layer: {app.currentLayer}  ", anchor="ne")
+
+
 
 def main():
     runApp(width = 800, height = 500)
