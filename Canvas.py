@@ -12,11 +12,11 @@ class AppCanvas:
         app.currentLayer = 1 # 0 is background, 1 goes up
 
     def drawLayers(app, canvas):
-        layers = app.layers
-        for layer in layers:
-            # app.canvasX,app.canvasY will be top left corner of layers
+        for layer in app.layers:
+            test = ImageTk.PhotoImage(layer.image)
             canvas.create_image(app.canvasX,app.canvasY, 
-                    anchor="nw", pilImage=(layer.image))
+                    anchor="nw", image=test)
+        # print(canvas.find_all())
 
 # A Layer object is just a wrapper for one Image object
 class Layer(object):

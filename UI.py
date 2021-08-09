@@ -5,7 +5,6 @@ class UI:
     def initializeUIVariables(app):
         # NOTE: Not using app.varName for the dimensions of each menu because
         # they end up as app level variables  
-
         # Top bar's left corner is always at (0,0)
         topBarWidth = app.width
         topBarHeight = 40
@@ -50,6 +49,7 @@ class UI:
 
     def drawTopAndSideBar(app, canvas):
         app.topBar.drawMenu(canvas)
+        app.topBar.drawOptions(canvas)
         app.sideBar.drawMenu(canvas)
 
 
@@ -80,7 +80,43 @@ class Menu(object):
         return self.name
 
 class TopBar(Menu):
-    pass
+    def __init__(self, name, cornerx, cornery, width, height, color):
+        super().__init__(name, cornerx, cornery, width, height, color)
+        self.padding = 5
+        self.options = ["brush", "eraser", "size"]
+        self.optionSelected = "brush"
+
+    def getOptionBounds(self, optionIndex):
+        # Bounds of the bar    
+        cellWidth = (self.width - 2 * self.padding) // len(self.options)
+        cellHeight = self.height - 2 * self.padding
+        x0 = self.cornerx + self.padding + cellWidth * optionIndex
+        y0 = self.cornery + self.padding
+        x1 = self.cornerx + self.padding + cellWidth * (optionIndex + 1)
+        y1 = self.cornery + self.padding + cellHeight
+        return x0, y0, x1, y1
+
+    def drawOptions(self, canvas):
+        for i in range(len(self.options)):
+            fill=""
+            if self.options[i] == self.optionSelected:
+                fill = "gray55"
+            x0, y0, x1, y1 = TopBar.getOptionBounds(self, i)
+            canvas.create_rectangle(x0, y0, x1, y1, fill=fill)
+            canvas.create_text((x0 + x1) / 2, (y0 + y1) / 2,
+                                    text=self.options[i])
+
+    def changeOption(self, app, clickx, clicky):
+        for i in range(len(self.options)):
+            optx0, opty0, optx1, opty1 = TopBar.getOptionBounds(self, i)
+            if ((optx0 <= clickx <= optx1) and (opty0 <= clicky <= opty1)):
+                if self.options[i] == "size":
+                    newSize = app.getUserInput("New size (px):")
+                    if int(newSize) > 0:
+                        app.brushSize = int(newSize)
+                    return
+                self.optionSelected = self.options[i]
+
 class SideBar(Menu):
     pass
 class CanvasContainer(Menu):
