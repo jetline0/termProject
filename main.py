@@ -3,7 +3,6 @@ from Canvas import * # Layer functions, LayerObj Class
 from UI import *
 
 def appStarted(app):
-    # app.timerDelay = 1
     app.mouseMovedDelay = 1
     UI.initializeUIVariables(app)
     AppCanvas.initializeLayers(app)
@@ -47,6 +46,7 @@ def mouseDragged(app, event):
                             event.y - app.canvasY - 5,
                             event.x - app.canvasX + 5,
                             event.y - app.canvasY + 5), fill=app.currentColor)
+        pass
     if app.currentTool == "eraser":
         app.draw.ellipse((event.x - app.canvasX - 5,
                     event.y - app.canvasY - 5,
