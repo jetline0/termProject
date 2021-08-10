@@ -6,7 +6,7 @@ import random
 
 
 def appStarted(app):
-    app.mouseMovedDelay = 15
+    app.mouseMovedDelay = 1
     app.timerDelay = 2000
     # current tool is app.topBar.optionSelected
     UI.initializeUIVariables(app)
@@ -17,6 +17,14 @@ def keyPressed(app, event):
     if event.key == "r":
         appStarted(app)
     # Change file
+    if event.key == "Up":
+        app.currentFile += 1
+        if app.currentFile == len(app.files):
+            app.currentFile -= 1
+    if event.key == "Down":
+        app.currentFile -= 1
+        if app.currentFile < 0:
+            app.currentFile = 0
     if event.key == "0":
         app.currentFile = 0
     if event.key == "1":
@@ -28,17 +36,15 @@ def keyPressed(app, event):
 
 def mousePressed(app, event):
     app.selectedMenu = UI.menuClicked(app, event.x, event.y)
-
     if app.selectedMenu == app.canvasContainer:
         # NOTE: ImageDraw object is at app.ImageDraw, not app.draw now
         Drawing.createImgDraw(app)
         Drawing.setPrev(app, event)
-        # Is the fill tool selected?
-        if app.topBar.optionSelected == "fill":
-            Drawing.preUseTool(app, event, app.topBar.optionSelected)
+        Drawing.preUseTool(app, event, app.topBar.optionSelected)
     elif app.selectedMenu == app.topBar:
-        # Find out if the selection was valid
         app.topBar.changeOption(app, event.x, event.y)
+    elif app.selectedMenu == app.sideBar:
+        app.sideBar.changeOption(app, event.x, event.y)
 
 def mouseDragged(app, event):
     if app.selectedMenu != app.canvasContainer: # you are NOT dragging in the right place 

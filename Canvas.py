@@ -7,7 +7,7 @@ class AppCanvas:
         app.fileHeight = 300
         app.canvasX = 40
         app.canvasY = 80
-        app.files = [File(app, 0)]
+        app.files = [File(app, pos) for pos in range(3)]
         app.currentFile = 0
 
     # Draws file - OKAY!
@@ -17,14 +17,12 @@ class AppCanvas:
 
 # A File object is just a wrapper for one Image object
 class File(object):
-    def __init__(self, app, pos, filepath=""):
+    def __init__(self, app, pos, img=None):
         self.pos = pos
-        self.fill = None
-        if pos == 0:
-            self.fill = (255, 255, 255)
-        if filepath == "":
+        self.fill = (255,255,255)
+        if img == None:
             self.image = Image.new("RGB", (app.fileWidth, app.fileHeight),
                                     self.fill)
         else:
             #not 100% confirmed functional rn
-            self.image = Image.open(filepath)
+            self.image = img
