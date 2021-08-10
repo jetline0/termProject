@@ -1,28 +1,30 @@
 from cmu_112_graphics import *
 
 class AppCanvas:
-    # when displaying the image, display it like normal. have putalpha handle
-    # the image's transparency will be modified
-    def initializeLayers(app):
-        app.canvasWidth = 500
-        app.canvasHeight = 300
+    # Initializes layers - OKAY!
+    def initializeFiles(app):
+        app.fileWidth = 500
+        app.fileHeight = 300
         app.canvasX = 40
         app.canvasY = 80
-        app.layers = [Layer(app, pos) for pos in range(3)]
-        app.currentLayer = 1 # 0 is background, 1 goes up
+        app.files = [File(app, 0)]
+        app.currentFile = 0
 
-    def drawLayers(app, canvas):
-        for layer in app.layers:
-            test = ImageTk.PhotoImage(layer.image)
-            canvas.create_image(app.canvasX,app.canvasY, 
-                    anchor="nw", image=test)
-        # print(canvas.find_all())
+    # Draws file - OKAY!
+    def drawFile(app, canvas):
+        im = ImageTk.PhotoImage(app.files[app.currentFile].image)
+        canvas.create_image(app.canvasX, app.canvasY, anchor="nw", image=im)
 
-# A Layer object is just a wrapper for one Image object
-class Layer(object):
-    def __init__(self, app, pos):
+# A File object is just a wrapper for one Image object
+class File(object):
+    def __init__(self, app, pos, filepath=""):
         self.pos = pos
         self.fill = None
         if pos == 0:
-            self.fill = (255, 255, 255, 255)
-        self.image = Image.new("RGBA", (app.canvasWidth, app.canvasHeight), self.fill)
+            self.fill = (255, 255, 255)
+        if filepath == "":
+            self.image = Image.new("RGB", (app.fileWidth, app.fileHeight),
+                                    self.fill)
+        else:
+            #not 100% confirmed functional rn
+            self.image = Image.open(filepath)

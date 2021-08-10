@@ -1,70 +1,60 @@
 from cmu_112_graphics import *
-from Canvas import * # Layer functions, LayerObj Class
+from Canvas import * # File functions, File Class
 from UI import *
+from Drawing import *
+import random
+
 
 def appStarted(app):
-    app.mouseMovedDelay = 1
-    UI.initializeUIVariables(app)
-    AppCanvas.initializeLayers(app)
+    app.mouseMovedDelay = 15
+    app.timerDelay = 2000
     # current tool is app.topBar.optionSelected
-    app.brushSize = 5
-    app.draw = None
-    app.currentColor = (0,0,255,255)
+    UI.initializeUIVariables(app)
+    AppCanvas.initializeFiles(app)
+    Drawing.initializeDrawingVariables(app)
 
-import random
 def keyPressed(app, event):
     if event.key == "r":
         appStarted(app)
-    # Change layer
+    # Change file
     if event.key == "0":
-        app.currentLayer = 0
+        app.currentFile = 0
     if event.key == "1":
-        app.currentLayer = 1
+        app.currentFile = 1
     if event.key == "2":
-        app.currentLayer = 2
+        app.currentFile = 2
     if event.key == "c":
-        app.currentColor = random.choice(["green", "black", "purple"])
+        app.currentColor = random.choice([(0,255,0), (0,0,255), (255,0,255)])
 
 def mousePressed(app, event):
-    selectedMenu = UI.menuClicked(app, event.x, event.y)
-    print(selectedMenu)
-    # only set app.draw to something if u click on canvasContainer
-    if selectedMenu == app.canvasContainer:
-        toModify = app.layers[app.currentLayer].image
-        app.draw = ImageDraw.Draw(toModify)
-    elif selectedMenu == app.topBar:
+    app.selectedMenu = UI.menuClicked(app, event.x, event.y)
+
+    if app.selectedMenu == app.canvasContainer:
+        # NOTE: ImageDraw object is at app.ImageDraw, not app.draw now
+        Drawing.createImgDraw(app)
+        Drawing.setPrev(app, event)
+        # Is the fill tool selected?
+        if app.topBar.optionSelected == "fill":
+            Drawing.preUseTool(app, event, app.topBar.optionSelected)
+    elif app.selectedMenu == app.topBar:
         # Find out if the selection was valid
         app.topBar.changeOption(app, event.x, event.y)
-        print("heehee not implemented yet")
 
 def mouseDragged(app, event):
-    if app.draw == None:
+    if app.selectedMenu != app.canvasContainer: # you are NOT dragging in the right place 
         return
-    if app.topBar.optionSelected == "brush":
-        app.draw.ellipse((event.x - app.canvasX - app.brushSize,
-                            event.y - app.canvasY - app.brushSize,
-                            event.x - app.canvasX + app.brushSize,
-                            event.y - app.canvasY + app.brushSize), fill=app.currentColor)
-        pass
-    if app.topBar.optionSelected == "eraser":
-        app.draw.ellipse((event.x - app.canvasX - app.brushSize,
-                    event.y - app.canvasY - app.brushSize,
-                    event.x - app.canvasX + app.brushSize,
-                    event.y - app.canvasY + app.brushSize), fill=(255,255,255,0))
+    Drawing.useTool(app, event, app.topBar.optionSelected)
 
 def mouseReleased(app, event):
-    del app.draw
-    app.draw = None
+    del app.ImageDraw 
+    app.ImageDraw = None
 
 def redrawAll(app, canvas):
     UI.drawCanvasContainer(app, canvas)
-    AppCanvas.drawLayers(app, canvas)
+    AppCanvas.drawFile(app, canvas)
     UI.drawTopAndSideBar(app, canvas)
-    canvas.create_text(app.width, 0, text=f"Current Layer: {app.currentLayer} ",
+    canvas.create_text(app.width, 0, text=f"Current File: {app.currentFile} ",
                     anchor="ne")
 
-def main():
-    runApp(width = 800, height = 500)
 
-if __name__ == "__main__":
-    main()
+runApp(width = 800, height = 500)

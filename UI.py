@@ -3,35 +3,33 @@ from cmu_112_graphics import *
 class UI:
     # Initializes the variables that change how the UI is displayed
     def initializeUIVariables(app):
-        # NOTE: Not using app.varName for the dimensions of each menu because
-        # they end up as app level variables  
         # Top bar's left corner is always at (0,0)
-        topBarWidth = app.width
-        topBarHeight = 40
-        topBarX = 0
-        topBarY = 0
+        app.topBarWidth = app.width
+        app.topBarHeight = 40
+        app.topBarX = 0
+        app.topBarY = 0
         # Side bar's left corner is always at (app.width - app.sideBarWidth, app.topBarHeight)
         sideBarWidth = 150
-        sideBarHeight = app.height - topBarHeight
+        sideBarHeight = app.height - app.topBarHeight
         sideBarX = app.width - sideBarWidth
-        sideBarY = topBarHeight
+        sideBarY = app.topBarHeight
         # The canvas container's left corner is always at (0, topBarHeight)
-        canvasContainerWidth = app.width - sideBarWidth
-        canvasContainerHeight = app.height - topBarHeight
-        canvasContainerX = 0
-        canvasContainerY = topBarHeight
+        app.canvasContainerWidth = app.width - sideBarWidth
+        app.canvasContainerHeight = app.height - app.topBarHeight
+        app.canvasContainerX = 0
+        app.canvasContainerY = app.topBarHeight
         # Initialize menus
         app.topBar = TopBar("topBar",
-                            topBarX, topBarY,
-                            topBarWidth, topBarHeight,
+                            app.topBarX, app.topBarY,
+                            app.topBarWidth, app.topBarHeight,
                             "gray64")
         app.sideBar = SideBar("sideBar",
                             sideBarX, sideBarY,
                             sideBarWidth, sideBarHeight,
                             "light grey")
         app.canvasContainer = CanvasContainer("canvasContainer",
-                            canvasContainerX, canvasContainerY,
-                            canvasContainerWidth, canvasContainerHeight,
+                            app.canvasContainerX, app.canvasContainerY,
+                            app.canvasContainerWidth, app.canvasContainerHeight,
                             "gainsboro")
         app.menus = [app.topBar, app.sideBar, app.canvasContainer]
 
@@ -83,7 +81,7 @@ class TopBar(Menu):
     def __init__(self, name, cornerx, cornery, width, height, color):
         super().__init__(name, cornerx, cornery, width, height, color)
         self.padding = 5
-        self.options = ["brush", "eraser", "size"]
+        self.options = ["brush", "eraser", "fill", "size"]
         self.optionSelected = "brush"
 
     def getOptionBounds(self, optionIndex):
@@ -112,6 +110,8 @@ class TopBar(Menu):
             if ((optx0 <= clickx <= optx1) and (opty0 <= clicky <= opty1)):
                 if self.options[i] == "size":
                     newSize = app.getUserInput("New size (px):")
+                    if newSize == None:
+                        return
                     if int(newSize) > 0:
                         app.brushSize = int(newSize)
                     return
