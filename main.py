@@ -1,9 +1,8 @@
 from cmu_112_graphics import *
+import random
 from Canvas import * # File functions, File Class
 from UI import *
 from Drawing import *
-import random
-
 
 def appStarted(app):
     app.mouseMovedDelay = 1
@@ -25,26 +24,17 @@ def keyPressed(app, event):
         app.currentFile -= 1
         if app.currentFile < 0:
             app.currentFile = 0
-    if event.key == "0":
-        app.currentFile = 0
-    if event.key == "1":
-        app.currentFile = 1
-    if event.key == "2":
-        app.currentFile = 2
     if event.key == "c":
         app.currentColor = random.choice([(0,255,0), (0,0,255), (255,0,255)])
 
 def mousePressed(app, event):
     app.selectedMenu = UI.menuClicked(app, event.x, event.y)
     if app.selectedMenu == app.canvasContainer:
-        # NOTE: ImageDraw object is at app.ImageDraw, not app.draw now
         Drawing.createImgDraw(app)
         Drawing.setPrev(app, event)
         Drawing.preUseTool(app, event, app.topBar.optionSelected)
-    elif app.selectedMenu == app.topBar:
-        app.topBar.changeOption(app, event.x, event.y)
-    elif app.selectedMenu == app.sideBar:
-        app.sideBar.changeOption(app, event.x, event.y)
+    else:
+        app.selectedMenu.changeOption(app, event.x, event.y)
 
 def mouseDragged(app, event):
     if app.selectedMenu != app.canvasContainer: # you are NOT dragging in the right place 
@@ -59,8 +49,8 @@ def redrawAll(app, canvas):
     UI.drawCanvasContainer(app, canvas)
     AppCanvas.drawFile(app, canvas)
     UI.drawTopAndSideBar(app, canvas)
+    Drawing.drawCursorVisualization(app, canvas)
     canvas.create_text(app.width, 0, text=f"Current File: {app.currentFile} ",
                     anchor="ne")
-
 
 runApp(width = 800, height = 500)

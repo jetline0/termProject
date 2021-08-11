@@ -71,18 +71,19 @@ class Menu(object):
         return (self.cornerx, self.cornery,
                 self.cornerx + self.width, self.cornery + self.height)
 
+    # Draws the menu
     def drawMenu(self, canvas):
         # Menu.getBounds(self) might not work...
         canvas.create_rectangle(Menu.getBounds(self), fill=self.color,
                                 outline="")
-
+    # Nicer print statement for debugging
     def __repr__(self):
         return self.name
 
 class TopBar(Menu):
     def __init__(self, name, cornerx, cornery, width, height, color):
         super().__init__(name, cornerx, cornery, width, height, color)
-        self.padding = 5
+        self.padding = 5 # Padding between buttons and edges of the menu
         self.options = ["brush", "eraser", "fill", "size"]
         self.optionSelected = "brush"
 
@@ -111,11 +112,12 @@ class TopBar(Menu):
             optx0, opty0, optx1, opty1 = TopBar.getOptionBounds(self, i)
             if ((optx0 <= clickx <= optx1) and (opty0 <= clicky <= opty1)):
                 if self.options[i] == "size":
-                    newSize = app.getUserInput("New size (px):")
+                    newSize = app.getUserInput("New size between 5 and 20 (inclusive):")
                     if newSize == None:
                         return
-                    if int(newSize) > 0:
-                        app.brushSize = int(newSize)
+                    while newSize == "" or not (20 >= int(newSize) >= 5):
+                        newSize = app.getUserInput("Please enter a new size between 5 and 20 (inclusive)!")                    
+                    app.brushSize = int(newSize)
                     return
                 self.optionSelected = self.options[i]
                 return

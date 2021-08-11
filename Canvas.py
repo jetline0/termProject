@@ -15,6 +15,13 @@ class AppCanvas:
         im = ImageTk.PhotoImage(app.files[app.currentFile].image)
         canvas.create_image(app.canvasX, app.canvasY, anchor="nw", image=im)
 
+    # Gets dimensions of current file
+    def getDimensions(app):
+        app.Image = app.files[app.currentFile].image
+        return app.Image.size
+
+
+
 # A File object is just a wrapper for one Image object
 class File(object):
     def __init__(self, app, pos, img=None):
