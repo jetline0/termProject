@@ -4,19 +4,33 @@ from Canvas import *
 class Drawing:
     def initializeDrawingVariables(app):
         app.brushSize = 5
+        app.optionSelected = "brush"
         app.ImageDraw = None
         app.currentColor = (0,0,0)
         app.prevx = None
         app.prevy = None
 
-    def toFileCoords(app, x, y):
+    def toFileCoords(app, x, y):        
         return (x - app.canvasX, y - app.canvasY)
 
-    def drawCursorVisualization(app, canvas):
-        pass
+    # Draw when the cursor location is in the canvasContainer 
+    def drawCursor(app, canvas):
+        if not Drawing.isValidCoord(app, *Drawing.toFileCoords(app, app.mouseX, app.mouseY)):
+            return
+        if app.optionSelected == "brush" or app.optionSelected == "eraser":
+            cursorSize = app.brushSize/2.5
+            canvas.create_oval(app.mouseX - cursorSize, app.mouseY - cursorSize,
+                            app.mouseX + cursorSize, app.mouseY + cursorSize,
+                            outline = "gray60")
+        # Paint bucket sprite comes from MSPaint
+        if app.optionSelected == "fill":
+            sprite = Image.open("icons/paintbucket.png")
+            sprite = sprite.resize((10,10))
+            canvas.create_image(app.mouseX, app.mouseY, image=ImageTk.PhotoImage(sprite))
+
 
     # Physical drawing functions
-    def drawstroke(app, event, color):
+    def drawStroke(app, event, color):
         # took inspiration from https://stackoverflow.com/questions/45172116/fix-pil-imagedraw-draw-line-with-wide-lines
         app.ImageDraw.line(Drawing.toFileCoords(app, app.prevx, app.prevy) + 
                             Drawing.toFileCoords(app, event.x, event.y),
@@ -27,11 +41,25 @@ class Drawing:
                             event.x - app.canvasX + app.brushSize/2.5,
                             event.y - app.canvasY + app.brushSize/2.5),
                             fill = color)
+    
+    def fill(app, event, color):
+        tofill = []
+        clickCoordinates = Drawing.toFileCoords(app, event.x, event.y)
+        findColor = app.Image.getpixel(clickCoordinates)
+        catch, topy = Drawing.findBorder(app, "up", findColor, clickCoordinates[0], clickCoordinates[1])
+        catch, bottomy = Drawing.findBorder(app, "down", findColor, clickCoordinates[0], clickCoordinates[1])
+        for yval in range(topy, bottomy+1):
+            leftx, catch = Drawing.findBorder(app, "left", findColor, clickCoordinates[0], yval)
+            rightx, catch = Drawing.findBorder(app, "right", findColor, clickCoordinates[0], yval)
+            domain = [(x, yval) for x in range(leftx, rightx + 1)]
+            tofill.extend(domain)
+        for coord in tofill:
+            app.Image.putpixel(coord, color)
 
+    # fill helper functions
     def isValidCoord(app, x, y):
         width, height = AppCanvas.getDimensions(app)
         return (0 <= x < width) and (0 <= y < height) 
-
 
     def findBorder(app, dir, findcolor, startx, starty):
         directions = ["up", "down", "left", "right"]
@@ -49,23 +77,10 @@ class Drawing:
             newy += dy
         return newx - dx, newy - dy
 
-
-
-    def fill(app, event, color):
-        tofill = []
-        clickCoordinates = Drawing.toFileCoords(app, event.x, event.y)
-        findColor = app.Image.getpixel(clickCoordinates)
-        catch, topy = Drawing.findBorder(app, "up", findColor, clickCoordinates[0], clickCoordinates[1])
-        catch, bottomy = Drawing.findBorder(app, "down", findColor, clickCoordinates[0], clickCoordinates[1])
-        for yval in range(topy, bottomy+1):
-            leftx, catch = Drawing.findBorder(app, "left", findColor, clickCoordinates[0], yval)
-            rightx, catch = Drawing.findBorder(app, "right", findColor, clickCoordinates[0], yval)
-            domain = [(x, yval) for x in range(leftx, rightx + 1)]
-            tofill.extend(domain)
-        for coord in tofill:
-            app.Image.putpixel(coord, color)
-
-
+    def eyedropper(app, event):
+        print(f"original color: {app.currentColor}")
+        app.currentColor = app.Image.getpixel(Drawing.toFileCoords(app, event.x, event.y))
+        print(f"new color: {app.currentColor}")
 
     # Events that happen before mouseDragged -- called by mousePressed(app, event)
     # Creates the ImageDraw object of the current File
@@ -73,25 +88,24 @@ class Drawing:
         app.Image = app.files[app.currentFile].image
         app.ImageDraw = ImageDraw.Draw(app.Image)
 
-    def setPrev(app, event):
+    def setPrevCoords(app, event):
         app.prevx = event.x
         app.prevy = event.y
 
     # Actually what gets called in the mouseDragged function, just many times
     def preUseTool(app, event, tool):
         if tool == "brush":
-            Drawing.drawstroke(app, event, app.currentColor)
+            Drawing.drawStroke(app, event, app.currentColor)
         elif tool == "eraser":
-            Drawing.drawstroke(app, event, (255,255,255))
+            Drawing.drawStroke(app, event, (255,255,255))
         elif tool == "fill":
             Drawing.fill(app, event, app.currentColor)
-            # ImageDraw.floodfill(app.Image,
-            #                     Drawing.toFileCoords(app, event.x, event.y), 
-            #                     app.currentColor)
+        elif tool == "eyedropper":
+            Drawing.eyedropper(app, event)
         # Pretty important for lines
-        Drawing.setPrev(app, event)
+        Drawing.setPrevCoords(app, event)
 
     def useTool(app, event, tool):
-        if tool == "fill":
+        if tool == "fill" or tool == "eyedropper":
             return
         Drawing.preUseTool(app, event, tool)

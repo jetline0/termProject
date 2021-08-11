@@ -7,10 +7,14 @@ from Drawing import *
 def appStarted(app):
     app.mouseMovedDelay = 1
     app.timerDelay = 2000
-    # current tool is app.topBar.optionSelected
+    # current tool is app.optionSelected
     UI.initializeUIVariables(app)
+    UI.initializeMenus(app)
     AppCanvas.initializeFiles(app)
     Drawing.initializeDrawingVariables(app)
+
+def mouseMoved(app, event):
+    app.mouseX, app.mouseY = event.x, event.y
 
 def keyPressed(app, event):
     if event.key == "r":
@@ -30,16 +34,22 @@ def keyPressed(app, event):
 def mousePressed(app, event):
     app.selectedMenu = UI.menuClicked(app, event.x, event.y)
     if app.selectedMenu == app.canvasContainer:
+        if not Drawing.isValidCoord(app, *Drawing.toFileCoords(app, event.x, event.y)):
+            return
         Drawing.createImgDraw(app)
-        Drawing.setPrev(app, event)
-        Drawing.preUseTool(app, event, app.topBar.optionSelected)
+        Drawing.setPrevCoords(app, event)
+        Drawing.preUseTool(app, event, app.optionSelected)
     else:
         app.selectedMenu.changeOption(app, event.x, event.y)
 
 def mouseDragged(app, event):
+    app.mouseX, app.mouseY = event.x, event.y
     if app.selectedMenu != app.canvasContainer: # you are NOT dragging in the right place 
         return
-    Drawing.useTool(app, event, app.topBar.optionSelected)
+    if not Drawing.isValidCoord(app, *Drawing.toFileCoords(app, event.x, event.y)):
+        return
+    if app.ImageDraw != None:
+        Drawing.useTool(app, event, app.optionSelected)
 
 def mouseReleased(app, event):
     del app.ImageDraw 
@@ -47,10 +57,16 @@ def mouseReleased(app, event):
 
 def redrawAll(app, canvas):
     UI.drawCanvasContainer(app, canvas)
-    AppCanvas.drawFile(app, canvas)
+    AppCanvas.drawCurrentFile(app, canvas)
     UI.drawTopAndSideBar(app, canvas)
-    Drawing.drawCursorVisualization(app, canvas)
-    canvas.create_text(app.width, 0, text=f"Current File: {app.currentFile} ",
+    Drawing.drawCursor(app, canvas)
+    canvas.create_text(app.width, 100, text=f"Current File: {app.currentFile} ",
                     anchor="ne")
+
+def sizeChanged(app):
+    UI.initializeUIVariables(app)
+    UI.initializeMenus(app)
+
+
 
 runApp(width = 800, height = 500)

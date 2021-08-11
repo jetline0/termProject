@@ -11,7 +11,7 @@ class AppCanvas:
         app.currentFile = 0
 
     # Draws file - OKAY!
-    def drawFile(app, canvas):
+    def drawCurrentFile(app, canvas):
         im = ImageTk.PhotoImage(app.files[app.currentFile].image)
         canvas.create_image(app.canvasX, app.canvasY, anchor="nw", image=im)
 
