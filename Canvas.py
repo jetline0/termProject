@@ -20,6 +20,11 @@ class AppCanvas:
         app.Image = app.files[app.currentFile].image
         return app.Image.size
 
+    def clearCurrentFile(app):
+        # original dimensions:
+        original = app.files[app.currentFile].image
+        dimen = original.size
+        app.files[app.currentFile].image = Image.new("RGB", dimen, (255,255,255))
 
 
 # A File object is just a wrapper for one Image object
@@ -31,5 +36,4 @@ class File(object):
             self.image = Image.new("RGB", (app.fileWidth, app.fileHeight),
                                     self.fill)
         else:
-            #not 100% confirmed functional rn
             self.image = img

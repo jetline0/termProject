@@ -1,8 +1,9 @@
 from cmu_112_graphics import *
 import random
-from Canvas import * # File functions, File Class
 from UI import *
+from Canvas import * # File functions, File Class
 from Drawing import *
+from Colorpicker import *
 
 def appStarted(app):
     app.mouseMovedDelay = 1
@@ -12,26 +13,27 @@ def appStarted(app):
     UI.initializeMenus(app)
     AppCanvas.initializeFiles(app)
     Drawing.initializeDrawingVariables(app)
+    app.mode = "drawingMode"
 
-def mouseMoved(app, event):
+def drawingMode_mouseMoved(app, event):
     app.mouseX, app.mouseY = event.x, event.y
 
-def keyPressed(app, event):
-    if event.key == "r":
+def drawingMode_keyPressed(app, event):
+    if event.key == "R":
         appStarted(app)
     # Change file
     if event.key == "Up":
-        app.currentFile += 1
-        if app.currentFile == len(app.files):
-            app.currentFile -= 1
-    if event.key == "Down":
         app.currentFile -= 1
         if app.currentFile < 0:
             app.currentFile = 0
+    if event.key == "Down":
+        app.currentFile += 1
+        if app.currentFile == len(app.files):
+            app.currentFile -= 1
     if event.key == "c":
         app.currentColor = random.choice([(0,255,0), (0,0,255), (255,0,255)])
 
-def mousePressed(app, event):
+def drawingMode_mousePressed(app, event):
     app.selectedMenu = UI.menuClicked(app, event.x, event.y)
     if app.selectedMenu == app.canvasContainer:
         if not Drawing.isValidCoord(app, *Drawing.toFileCoords(app, event.x, event.y)):
@@ -40,9 +42,13 @@ def mousePressed(app, event):
         Drawing.setPrevCoords(app, event)
         Drawing.preUseTool(app, event, app.optionSelected)
     else:
+        if app.selectedMenu == app.sideBar:
+            if app.sideBar.currentColorClicked(app, event):
+                app.mode = "colorpickerMode"
+            app.sideBar.fileRectangleClicked(app, event)
         app.selectedMenu.changeOption(app, event.x, event.y)
 
-def mouseDragged(app, event):
+def drawingMode_mouseDragged(app, event):
     app.mouseX, app.mouseY = event.x, event.y
     if app.selectedMenu != app.canvasContainer: # you are NOT dragging in the right place 
         return
@@ -51,22 +57,33 @@ def mouseDragged(app, event):
     if app.ImageDraw != None:
         Drawing.useTool(app, event, app.optionSelected)
 
-def mouseReleased(app, event):
+def drawingMode_mouseReleased(app, event):
     del app.ImageDraw 
     app.ImageDraw = None
 
-def redrawAll(app, canvas):
+def drawingMode_redrawAll(app, canvas):
     UI.drawCanvasContainer(app, canvas)
     AppCanvas.drawCurrentFile(app, canvas)
     UI.drawTopAndSideBar(app, canvas)
     Drawing.drawCursor(app, canvas)
-    canvas.create_text(app.width, 100, text=f"Current File: {app.currentFile} ",
-                    anchor="ne")
 
-def sizeChanged(app):
+def drawingMode_sizeChanged(app):
     UI.initializeUIVariables(app)
     UI.initializeMenus(app)
 
+#########################################################
+# colorpicker mode - activated when the option is pressed
+#########################################################
+
+def colorpickerMode_keyPressed(app, event):
+    if event.key == "b":
+        app.mode = "drawingMode"
+
+def colorpickerMode_redrawAll(app, canvas):
+    canvas.create_rectangle(0,0,app.width,app.height, fill="gainsboro")
+    canvas.create_text(app.width / 2, app.height / 2,
+                        text="press b to return to the canvas")
+        
 
 
-runApp(width = 800, height = 500)
+runApp(width = 1000, height = 500)

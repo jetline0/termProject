@@ -1,5 +1,6 @@
 from cmu_112_graphics import *
 from Canvas import *
+from UI import *
 
 class Drawing:
     def initializeDrawingVariables(app):
@@ -17,6 +18,8 @@ class Drawing:
     def drawCursor(app, canvas):
         if not Drawing.isValidCoord(app, *Drawing.toFileCoords(app, app.mouseX, app.mouseY)):
             return
+        if UI.menuClicked(app, app.mouseX, app.mouseY) != app.canvasContainer:
+            return
         if app.optionSelected == "brush" or app.optionSelected == "eraser":
             cursorSize = app.brushSize/2.5
             canvas.create_oval(app.mouseX - cursorSize, app.mouseY - cursorSize,
@@ -27,7 +30,6 @@ class Drawing:
             sprite = Image.open("icons/paintbucket.png")
             sprite = sprite.resize((10,10))
             canvas.create_image(app.mouseX, app.mouseY, image=ImageTk.PhotoImage(sprite))
-
 
     # Physical drawing functions
     def drawStroke(app, event, color):
@@ -44,13 +46,13 @@ class Drawing:
     
     def fill(app, event, color):
         tofill = []
-        clickCoordinates = Drawing.toFileCoords(app, event.x, event.y)
-        findColor = app.Image.getpixel(clickCoordinates)
-        catch, topy = Drawing.findBorder(app, "up", findColor, clickCoordinates[0], clickCoordinates[1])
-        catch, bottomy = Drawing.findBorder(app, "down", findColor, clickCoordinates[0], clickCoordinates[1])
+        clickx, clicky = Drawing.toFileCoords(app, event.x, event.y)
+        findColor = app.Image.getpixel((clickx,clicky))
+        catch, topy = Drawing.findBorder(app, "up", findColor, clickx, clicky)
+        catch, bottomy = Drawing.findBorder(app, "down", findColor, clickx, clicky)
         for yval in range(topy, bottomy+1):
-            leftx, catch = Drawing.findBorder(app, "left", findColor, clickCoordinates[0], yval)
-            rightx, catch = Drawing.findBorder(app, "right", findColor, clickCoordinates[0], yval)
+            leftx, catch = Drawing.findBorder(app, "left", findColor, clickx, yval)
+            rightx, catch = Drawing.findBorder(app, "right", findColor, clickx, yval)
             domain = [(x, yval) for x in range(leftx, rightx + 1)]
             tofill.extend(domain)
         for coord in tofill:
