@@ -1,7 +1,9 @@
+from PIL.ImageDraw import floodfill
 from cmu_112_graphics import *
 from Canvas import *
 from UI import *
 
+queue = []
 class Drawing:
     def initializeDrawingVariables(app):
         app.brushSize = 5
@@ -13,6 +15,10 @@ class Drawing:
 
     def toFileCoords(app, x, y):        
         return (x - app.canvasX, y - app.canvasY)
+
+    def isValidCoord(app, x, y):
+        width, height = AppCanvas.getDimensions(app)
+        return (0 <= x < width) and (0 <= y < height) 
 
     # Draw when the cursor location is in the canvasContainer 
     def drawCursor(app, canvas):
@@ -44,40 +50,48 @@ class Drawing:
                             event.y - app.canvasY + app.brushSize/2.5),
                             fill = color)
     
-    def fill(app, event, color):
-        tofill = []
-        clickx, clicky = Drawing.toFileCoords(app, event.x, event.y)
-        findColor = app.Image.getpixel((clickx,clicky))
-        catch, topy = Drawing.findBorder(app, "up", findColor, clickx, clicky)
-        catch, bottomy = Drawing.findBorder(app, "down", findColor, clickx, clicky)
-        for yval in range(topy, bottomy+1):
-            leftx, catch = Drawing.findBorder(app, "left", findColor, clickx, yval)
-            rightx, catch = Drawing.findBorder(app, "right", findColor, clickx, yval)
-            domain = [(x, yval) for x in range(leftx, rightx + 1)]
-            tofill.extend(domain)
-        for coord in tofill:
-            app.Image.putpixel(coord, color)
+    def preFill(app, event, replaceColor):
+        # click coords on the canvas
+        x, y = Drawing.toFileCoords(app, event.x, event.y)
+        print(f"x:{x},y:{y}")
+        # Color to replace
+        findColor = app.Image.getpixel((x,y))
+        # turn the pixel color values of an image to a list
+        # source: https://stackoverflow.com/questions/1109422/getting-list-of-pixel-values-from-pil
+        pixels = list(app.Image.getdata())
+        width, height = app.Image.size
+        pixels = [pixels[i * width:(i + 1) * width] for i in range(height)]
+        print(len(pixels), len(pixels[0]))
+        Drawing.floodfill(pixels, y, x, findColor, replaceColor)
+        data = Drawing.flatten(pixels)
+        app.Image.putdata(data)
+
+    def floodfill(L, startrow, startcol, toBeReplaced, replaceColor):
+        # is the cell ur looking at the toBeReplacedColor?
+        # base case, if it is, fill it in, check
+        if L[startrow][startcol] == toBeReplaced:
+            queue.append((startrow, startcol))
+        while len(queue) > 0:
+            stackMember = queue.pop()
+            L[stackMember[0]][stackMember[1]] = replaceColor
+            queue.extend(Drawing.findValidNeighbors(L, stackMember[0], stackMember[1], toBeReplaced))
 
     # fill helper functions
-    def isValidCoord(app, x, y):
-        width, height = AppCanvas.getDimensions(app)
-        return (0 <= x < width) and (0 <= y < height) 
+    # taken from https://stackoverflow.com/questions/952914/how-to-make-a-flat-list-out-of-a-list-of-lists
+    def flatten(t):
+        return [item for sublist in t for item in sublist]
+    
+    def findValidNeighbors(L, startrow, startcol, toBeReplaced):
+        rows = len(L)
+        cols = len(L[0])
+        validNeighbors = []
+        directions = [(-1,0), (1,0), (0,-1), (0,1)]
+        for drow, dcol in directions:
+            if (0 <= startrow  + drow < rows and 0 <= startcol + dcol < cols and
+                L[startrow + drow][startcol+ dcol] == toBeReplaced):
+                validNeighbors.append((startrow + drow, startcol + dcol))
+        return validNeighbors
 
-    def findBorder(app, dir, findcolor, startx, starty):
-        directions = ["up", "down", "left", "right"]
-        delta = [(0,-1), (0,1), (-1,0), (1,0)]
-        dx, dy = delta[directions.index(dir)]
-        newx, newy = startx + dx, starty + dy 
-        while Drawing.isValidCoord(app, newx, newy): #and valid bounds:
-            # get color at (newx, newy)
-            foundcolor = app.Image.getpixel((newx, newy))
-            # if that color isn't equal to findcolor, return (newx - dx, newy - dy)
-            if foundcolor != findcolor:
-                return (newx - dx, newy - dy)
-            # increment newx and newy by dx and dy
-            newx += dx
-            newy += dy
-        return newx - dx, newy - dy
 
     def eyedropper(app, event):
         print(f"original color: {app.currentColor}")
@@ -101,7 +115,7 @@ class Drawing:
         elif tool == "eraser":
             Drawing.drawStroke(app, event, (255,255,255))
         elif tool == "fill":
-            Drawing.fill(app, event, app.currentColor)
+            Drawing.preFill(app, event, app.currentColor)
         elif tool == "eyedropper":
             Drawing.eyedropper(app, event)
         # Pretty important for lines
