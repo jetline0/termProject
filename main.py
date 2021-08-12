@@ -13,6 +13,7 @@ def appStarted(app):
     UI.initializeMenus(app)
     AppCanvas.initializeFiles(app)
     Drawing.initializeDrawingVariables(app)
+    Colorpicker.initializeColorpicker(app)
     app.mode = "drawingMode"
 
 def drawingMode_mouseMoved(app, event):
@@ -80,10 +81,13 @@ def colorpickerMode_keyPressed(app, event):
         app.mode = "drawingMode"
 
 def colorpickerMode_redrawAll(app, canvas):
-    canvas.create_rectangle(0,0,app.width,app.height, fill="gainsboro")
-    canvas.create_text(app.width / 2, app.height / 2,
-                        text="press b to return to the canvas")
-        
+    # canvas.create_rectangle(0,0,app.width,app.height, fill="gainsboro")
+    # canvas.create_text(app.width / 2, app.height / 3,
+    #                     text="press b to return to the canvas")
+    Colorpicker.drawSquare(app, canvas)
+    Colorpicker.drawBar(app, canvas)
 
+def colorpickerMode_mousePressed(app, event):
+    Colorpicker.handleClick(app, event)
 
 runApp(width = 1000, height = 500)

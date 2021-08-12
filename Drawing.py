@@ -1,9 +1,8 @@
-from PIL.ImageDraw import floodfill
 from cmu_112_graphics import *
 from Canvas import *
 from UI import *
 
-queue = []
+stacks = []
 class Drawing:
     def initializeDrawingVariables(app):
         app.brushSize = 5
@@ -53,7 +52,6 @@ class Drawing:
     def preFill(app, event, replaceColor):
         # click coords on the canvas
         x, y = Drawing.toFileCoords(app, event.x, event.y)
-        print(f"x:{x},y:{y}")
         # Color to replace
         findColor = app.Image.getpixel((x,y))
         # turn the pixel color values of an image to a list
@@ -61,7 +59,6 @@ class Drawing:
         pixels = list(app.Image.getdata())
         width, height = app.Image.size
         pixels = [pixels[i * width:(i + 1) * width] for i in range(height)]
-        print(len(pixels), len(pixels[0]))
         Drawing.floodfill(pixels, y, x, findColor, replaceColor)
         data = Drawing.flatten(pixels)
         app.Image.putdata(data)
@@ -70,11 +67,11 @@ class Drawing:
         # is the cell ur looking at the toBeReplacedColor?
         # base case, if it is, fill it in, check
         if L[startrow][startcol] == toBeReplaced:
-            queue.append((startrow, startcol))
-        while len(queue) > 0:
-            stackMember = queue.pop()
+            stacks.append((startrow, startcol))
+        while len(stacks) > 0:
+            stackMember = stacks.pop()
             L[stackMember[0]][stackMember[1]] = replaceColor
-            queue.extend(Drawing.findValidNeighbors(L, stackMember[0], stackMember[1], toBeReplaced))
+            stacks.extend(Drawing.findValidNeighbors(L, stackMember[0], stackMember[1], toBeReplaced))
 
     # fill helper functions
     # taken from https://stackoverflow.com/questions/952914/how-to-make-a-flat-list-out-of-a-list-of-lists
@@ -94,9 +91,9 @@ class Drawing:
 
 
     def eyedropper(app, event):
-        print(f"original color: {app.currentColor}")
+        # print(f"original color: {app.currentColor}")
         app.currentColor = app.Image.getpixel(Drawing.toFileCoords(app, event.x, event.y))
-        print(f"new color: {app.currentColor}")
+        # print(f"new color: {app.currentColor}")
 
     # Events that happen before mouseDragged -- called by mousePressed(app, event)
     # Creates the ImageDraw object of the current File
