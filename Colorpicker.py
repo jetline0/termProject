@@ -87,7 +87,7 @@ class Colorpicker:
                 height = square.size[1]
                 data[x,y] = roundthruple(HSVtoRGB((app.barSelect / app.scale) * 360 / width,
                                                     x / width,
-                                                    1 - y / height))
+                                                    y / height))
         app.square = square.resize((app.squareWidth, app.squareHeight))
         app.squareImage = ImageTk.PhotoImage(app.square)
 
@@ -186,8 +186,8 @@ class Colorpicker:
     def RGBtoHSV(r,g,b):
         rprime, gprime, bprime = r/255, g/255, b/255
         rgb = {"rprime": rprime, "gprime": gprime, "bprime": bprime}
-        cmax = max(rgb)
-        cmin = min(rgb)
+        cmax = max(rgb, key=lambda key: rgb[key])
+        cmin = min(rgb, key=lambda key: rgb[key])
         d = rgb[cmax] - rgb[cmin]
         # get hue
         if d == 0:
@@ -210,8 +210,14 @@ class Colorpicker:
     def HSVtoPoints(app, h, s, v):
         # h = new barSelect * 360 / width of bar
         # s = new x / width 
-        # v = new y / height
+        # v = 1 - new y / height
+        # print(h,s,v)
         app.barSelect = h * app.barWidth / 360
         app.squareSelectX = s * app.squareWidth
-        app.squareSelectY = v * app.squareHeight
+        app.squareSelectY = v * app.squareHeight 
     
+    # def debug(app, event):
+    #     x0, y0, x1, y1 = Colorpicker.getBoundsSquare(app)
+    #     x, y = findRelativeCoords(app, event.x, event.y, x0, y0)
+    #     print(app.square.getpixel((x,y)))
+    #     print(Colorpicker.RGBtoHSV(*app.square.getpixel((x,y))))

@@ -92,5 +92,9 @@ def colorpickerMode_mousePressed(app, event):
 def colorpickerMode_mouseDragged(app, event):
     Colorpicker.handleClick(app, event)
 
+# def colorpickerMode_mouseReleased(app, event):
+#     x0, y0, x1, y1 = Colorpicker.getBoundsSquare(app)
+#     if x0 <= event.x <= x1 and y0 <= event.y <= y1:
+#         Colorpicker.debug(app, event)
 
 runApp(width = 1000, height = 500)

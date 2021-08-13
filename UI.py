@@ -155,7 +155,8 @@ class SideBar(Menu):
         image = app.files[fileIndex].image
         # finds the largest of the two dimensions and finds the scaling necessary
         width, height = image.size
-        largerdimension = max({"width":width, "height":height})
+        d = {"width":width, "height":height}
+        largerdimension = max(d, key=lambda key: d[key])
         x0, y0, x1, y1 = self.getFileRectangleBounds(app, fileIndex)
         widthOfBox = x1 - x0
         heightOfBox = y1 - y0
