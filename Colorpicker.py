@@ -182,10 +182,11 @@ class Colorpicker:
         # RGB to HSV
         return Colorpicker.RGBtoHSV(*app.currentColor)
 
-    # based off of this: https://www.rapidtables.com/convert/color/rgb-to-hsv.html
+    # based off of this formula: https://www.rapidtables.com/convert/color/rgb-to-hsv.html
     def RGBtoHSV(r,g,b):
         rprime, gprime, bprime = r/255, g/255, b/255
         rgb = {"rprime": rprime, "gprime": gprime, "bprime": bprime}
+        # max of dictionary https://www.programiz.com/python-programming/methods/built-in/max
         cmax = max(rgb, key=lambda key: rgb[key])
         cmin = min(rgb, key=lambda key: rgb[key])
         d = rgb[cmax] - rgb[cmin]
@@ -208,10 +209,6 @@ class Colorpicker:
         return (h,s,v)
 
     def HSVtoPoints(app, h, s, v):
-        # h = new barSelect * 360 / width of bar
-        # s = new x / width 
-        # v = 1 - new y / height
-        # print(h,s,v)
         app.barSelect = h * app.barWidth / 360
         app.squareSelectX = s * app.squareWidth
         app.squareSelectY = v * app.squareHeight 
