@@ -1,5 +1,4 @@
 from cmu_112_graphics import *
-import random
 from UI import *
 from Canvas import * # File functions, File Class
 from Drawing import *
@@ -20,19 +19,16 @@ def drawingMode_mouseMoved(app, event):
     app.mouseX, app.mouseY = event.x, event.y
 
 def drawingMode_keyPressed(app, event):
+    if event.key == "Up":
+        app.canvasY -= 10
+    if event.key == "Down":
+        app.canvasY += 10
+    if event.key == "Left":
+        app.canvasX -= 10
+    if event.key == "Right":
+        app.canvasX += 10
     if event.key == "R":
         appStarted(app)
-    # Change file
-    if event.key == "Up":
-        app.currentFile -= 1
-        if app.currentFile < 0:
-            app.currentFile = 0
-    if event.key == "Down":
-        app.currentFile += 1
-        if app.currentFile == len(app.files):
-            app.currentFile -= 1
-    if event.key == "c":
-        app.currentColor = random.choice([(0,255,0), (0,0,255), (255,0,255)])
 
 def drawingMode_mousePressed(app, event):
     app.selectedMenu = UI.menuClicked(app, event.x, event.y)
@@ -86,8 +82,15 @@ def colorpickerMode_redrawAll(app, canvas):
     #                     text="press b to return to the canvas")
     Colorpicker.drawSquare(app, canvas)
     Colorpicker.drawBar(app, canvas)
+    Colorpicker.drawBarSelection(app, canvas)
+    Colorpicker.drawSquareSelection(app, canvas)
+    Colorpicker.drawCurrentColor(app, canvas)
 
 def colorpickerMode_mousePressed(app, event):
     Colorpicker.handleClick(app, event)
+
+def colorpickerMode_mouseDragged(app, event):
+    Colorpicker.handleClick(app, event)
+
 
 runApp(width = 1000, height = 500)

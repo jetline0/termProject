@@ -54,6 +54,8 @@ class Drawing:
         x, y = Drawing.toFileCoords(app, event.x, event.y)
         # Color to replace
         findColor = app.Image.getpixel((x,y))
+        if findColor == replaceColor:
+            return
         # turn the pixel color values of an image to a list
         # source: https://stackoverflow.com/questions/1109422/getting-list-of-pixel-values-from-pil
         pixels = list(app.Image.getdata())

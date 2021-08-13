@@ -1,5 +1,6 @@
 from cmu_112_graphics import *
 from Canvas import *
+from Colorpicker import *
 
 class UI:
     # Initializes the variables that change how the UI is displayed
@@ -86,8 +87,7 @@ class TopBar(Menu):
     def __init__(self, name, cornerx, cornery, width, height, color):
         super().__init__(name, cornerx, cornery, width, height, color)
         self.padding = 5 # Padding between buttons and edges of the menu
-        self.options = ["brush", "eraser", "fill", "brush size",
-                        "eyedropper", "rectangle"]
+        self.options = ["brush", "eraser", "fill", "brush size", "eyedropper"]
 
 #########################################################
 # change tool
@@ -132,7 +132,7 @@ class SideBar(Menu):
     def __init__(self, name, cornerx, cornery, width, height, color):
         super().__init__(name, cornerx, cornery, width, height, color)
         self.padding = 5
-        self.options = ["load", "save", "new", "delete", "reset"]
+        self.options = ["load", "save", "new", "delete", "reset", "resize"]
         self.optionheight = 20
         # app.files is the list of File objects
 
@@ -193,6 +193,8 @@ class SideBar(Menu):
 #########################################################
     def currentColorClicked(self, app, event):
         x0, y0, x1, y1 = self.getCurrentColorBounds(app)
+        Colorpicker.changePoints(app)
+        Colorpicker.generateSquare(app)
         return (x0 <= event.x <= x1) and (y0 <= event.y <= y1)
 
     def getCurrentColorBounds(self, app):
@@ -246,7 +248,7 @@ class SideBar(Menu):
                 if self.options[i] == "load":
                     print("load")
                     newFile = app.loadImage()
-                    newFileObject = File(app, len(app.files), newFile.convert("RGBA"))
+                    newFileObject = File(app, len(app.files), newFile.convert("RGB"))
                     app.files.append(newFileObject)
                     app.currentFile = len(app.files) - 1
                     return
@@ -275,7 +277,13 @@ class SideBar(Menu):
                         app.currentFile -= 1
                 elif self.options[i] == "reset":
                     AppCanvas.clearCurrentFile(app)
-
+                elif self.options[i] == "resize":
+                    currentFile = app.files[app.currentFile].image
+                    newWidth = app.getUserInput(f"New width (current is {currentFile.size[0]}px):")
+                    newHeight = app.getUserInput(f"New height (current is {currentFile.size[1]}px):")
+                    if newWidth == None or newWidth == "" or newHeight == None or newHeight == "":
+                        return
+                    app.files[app.currentFile].image = app.files[app.currentFile].image.resize((int(newWidth), int(newHeight)))
 
 class CanvasContainer(Menu):
     pass
