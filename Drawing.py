@@ -65,9 +65,10 @@ class Drawing:
         data = Drawing.flatten(pixels)
         app.Image.putdata(data)
 
+    # stack method recommended by https://stackoverflow.com/questions/159590/way-to-go-from-recursion-to-iteration 
+    # but i wrote this code myself - any similarity is probably just because the floodfill problem
+    # is a popular problem to solve
     def floodfill(L, startrow, startcol, toBeReplaced, replaceColor):
-        # is the cell ur looking at the toBeReplacedColor?
-        # base case, if it is, fill it in, check
         if L[startrow][startcol] == toBeReplaced:
             stacks.append((startrow, startcol))
         while len(stacks) > 0:
