@@ -21,7 +21,6 @@ class UI:
         app.canvasContainerHeight = app.height - app.topBarHeight
         app.canvasContainerX = 0
         app.canvasContainerY = app.topBarHeight
-        # Initialize menus
     def initializeMenus(app):
         app.topBar = TopBar("topBar",
                             app.topBarX, app.topBarY,
@@ -249,6 +248,8 @@ class SideBar(Menu):
                 if self.options[i] == "load":
                     print("load")
                     newFile = app.loadImage()
+                    if newFile == None:
+                        return
                     newFileObject = File(app, len(app.files), newFile.convert("RGB"))
                     app.files.append(newFileObject)
                     app.currentFile = len(app.files) - 1

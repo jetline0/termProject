@@ -216,8 +216,3 @@ class Colorpicker:
         app.squareSelectX = s * app.squareWidth
         app.squareSelectY = v * app.squareHeight 
     
-    # def debug(app, event):
-    #     x0, y0, x1, y1 = Colorpicker.getBoundsSquare(app)
-    #     x, y = findRelativeCoords(app, event.x, event.y, x0, y0)
-    #     print(app.square.getpixel((x,y)))
-    #     print(Colorpicker.RGBtoHSV(*app.square.getpixel((x,y))))
